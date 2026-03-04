@@ -382,6 +382,13 @@ func (global *Global) RootFlags(installName string, bkImage string) []cli.Flag {
 			Destination: &global.ContainerName,
 			Hidden:      true,
 		},
+		&cli.IntFlag{
+			Name:        "buildkit-conn-timeout",
+			Usage:       "Timeout for buildkitd connection checks in seconds",
+			EnvVars:     []string{"EARTHLY_BUILDKIT_CONN_TIMEOUT"},
+			Value:       5,
+			Destination: (*int)(&global.BuildkitdSettings.ConnectionTimeout),
+		},
 		&cli.StringFlag{
 			Name:        "buildkit-volume-name",
 			Value:       defaultInstallationName + DefaultBuildkitdVolumeSuffix,

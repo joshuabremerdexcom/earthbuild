@@ -26,6 +26,7 @@ type Settings struct {
 	CacheSizeMb          int
 	CacheSizePct         int
 	Timeout              time.Duration `hash:"ignore"`
+	ConnectionTimeout    int           `hash:"ignore"` // seconds
 	MaxParallelism       int
 	CacheKeepDuration    int
 	CniMtu               uint16

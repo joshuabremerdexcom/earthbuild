@@ -215,13 +215,14 @@ func maybeStart(
 	settings Settings,
 	opts ...client.ClientOpt,
 ) (cinfo *client.Info, winfo *client.WorkerInfo, finalErr error) {
+
 	if settings.StartUpLockPath != "" {
-		var tryLockDone atomic.Bool
+		var tryLockDone atomic.Value
+		tryLockDone.Store(false)
 
 		go func() {
 			time.Sleep(3 * time.Second)
-
-			if !tryLockDone.Load() {
+			if !tryLockDone.Load().(bool) {
 				console.Warnf("waiting on other instance of earthbuild to start buildkitd (as indicated by %q existing)",
 					settings.StartUpLockPath)
 			}
@@ -398,7 +399,11 @@ func maybeRestart(
 				workerInfo *client.WorkerInfo
 			)
 
-			info, workerInfo, err = checkConnection(ctx, settings.BuildkitAddress, 5*time.Second, opts...)
+			connTimeout := settings.ConnectionTimeout
+			if connTimeout == 0 {
+				connTimeout = 5
+			}
+			info, workerInfo, err = checkConnection(ctx, settings.BuildkitAddress, time.Duration(connTimeout)*time.Second, opts...)
 			if err != nil {
 				return nil, nil, errors.Wrap(err, "could not connect to buildkitd to shut down container")
 			}
@@ -415,7 +420,11 @@ func maybeRestart(
 			workerInfo *client.WorkerInfo
 		)
 
-		info, workerInfo, err = checkConnection(ctx, settings.BuildkitAddress, 5*time.Second, opts...)
+		connTimeout := settings.ConnectionTimeout
+		if connTimeout == 0 {
+			connTimeout = 5
+		}
+		info, workerInfo, err = checkConnection(ctx, settings.BuildkitAddress, time.Duration(connTimeout)*time.Second, opts...)
 		if err != nil {
 			return nil, nil, errors.Wrap(err, "could not verify connection to buildkitd container")
 		}
